@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .cardLayout {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #fff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        input {
+            padding: 5px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="cardLayout">
+        <p style="text-align: center">abcd</p>
+        <!-- 使用者輸入欄位 -->
+        <input type="text" id="inputA" placeholder="a">
+        <input type="text" id="inputB" placeholder="b">
+        <input type="text" id="inputC" placeholder="c">
+        <input type="text" id="inputD" placeholder="d">
+        <!-- 新增資料和重新整理資料的按鈕 -->
+        <button id="addButton">新增資料</button>
+        <button id="refreshButton">重新整理資料</button>
+        <!-- 顯示資料的表格 -->
+        <table id="record2">
+            <thead>
+                <tr>
+                    <th>a</th>
+                    <th>b</th>
+                    <th>c</th>
+                    <th>d</th>
+                </tr>
+            </thead>
+            <!-- 表格主體，動態填充資料 -->
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        /**
+         * 函數: 從伺服器獲取資料並更新表格
+         */
+        function fetchData() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/users", true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var data = JSON.parse(xhr.responseText).users;
+                    var tableBody = document.querySelector("#record2 tbody");
+                    tableBody.innerHTML = ""; // 清空現有資料
+                    // 遍歷每個資料物件，創建表格行和填充資料
+                    for (var i = 0; i < data.length; i++) {
+                        var tableRow = document.createElement("tr");
+                        // 遍歷資料物件中的每個屬性
+                        for (var key in data[i]) {
+                            // 創建表格的一個單元格 <td>
+                            var tableData = document.createElement("td");
+                            // 將資料填充到單元格中
+                            tableData.textContent = data[i][key];
+                            // 將單元格添加到行中
+                            tableRow.appendChild(tableData);
+                        }
+                        // 將行添加到表格主體中
+                        tableBody.appendChild(tableRow);
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        /**
+         * 函數: 新增資料至伺服器
+         */
+        function addData() {
+            var inputA = document.getElementById("inputA").value;
+            var inputB = document.getElementById("inputB").value;
+            var inputC = document.getElementById("inputC").value;
+            var inputD = document.getElementById("inputD").value;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/addUser", true);
+            xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    fetchData(); // 新增資料後重新整理
+                    // 清空輸入框
+                    document.getElementById("inputA").value = "";
+                    document.getElementById("inputB").value = "";
+                    document.getElementById("inputC").value = "";
+                    document.getElementById("inputD").value = "";
+                }
+            };
+            var data = {
+                a: inputA,
+                b: inputB,
+                c: inputC,
+                d: inputD
+            };
+            xhr.send(JSON.stringify(data));
+        }
+
+        /**
+         * 當網頁載入完成後執行的初始化操作
+         */
+        document.addEventListener("DOMContentLoaded", function () {
+            fetchData(); // 載入時獲取並顯示資料
+
+            // 監聽按鈕點擊事件，執行對應函數
+            document.getElementById("refreshButton").addEventListener("click", function () {
+                fetchData(); // 重新整理資料
+            });
+
+            document.getElementById("addButton").addEventListener("click", function () {
+                addData(); // 新增資料
+            });
+        });
+    </script>
+</body>
+</html>
