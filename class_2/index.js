@@ -4,7 +4,8 @@ const path = require('path');  // 需要引入 path 模組
 
 // 建立 Express 應用程式實例
 const app = express();
-
+// 將views資料夾配置為靜態
+app.use(express.static('views'));
 // 指定應用程式使用的埠號
 const port = 3000;
 
